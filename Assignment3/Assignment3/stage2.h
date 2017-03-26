@@ -23,14 +23,15 @@ struct PathNode
 class Stage2
 {
 public:
-	Stage2(std::vector<Stage1Node>);
-	std::queue<PathNode>  FindMinimalPath();
+	Stage2(TurtlePositionNode [], PathNode []);
+	int  FindMinimalPath(PathNode []);
+
 private:
-	void InitializeHeuristicField(HeuristicNode heuristicField[][110]);
-	std::vector<Stage1Node> villainTurtles;
-	std::vector<Stage1Node> targetTurtles;
-	Stage1Node ChooseTargetTurtle(const int, const int, std::vector<Stage1Node>);
-	void SeperateTargetAndVillainTurtles(std::vector<Stage1Node>);
+	void InitializeHeuristicField(HeuristicNode heuristicField[][12]);
+	std::vector<TurtlePositionNode> villainTurtles;
+	std::vector<TurtlePositionNode> targetTurtles;
+	TurtlePositionNode ChooseTargetTurtle(const int, const int, std::vector<TurtlePositionNode>);
+	void SeperateTargetAndVillainTurtles(TurtlePositionNode []);
 };
 
 

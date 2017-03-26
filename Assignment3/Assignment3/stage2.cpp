@@ -1,4 +1,5 @@
 #include "stage2.h"
+
 struct HeuristicNode
 {
 double f;
@@ -21,14 +22,12 @@ bool HeuristicNode::operator<(const HeuristicNode& h2)
 	return this->f < h2.f;
 }
 
-Stage2::Stage2(std::vector<Stage1Node> stage1Nodes)
+Stage2::Stage2(TurtlePositionNode turtlePositionNodes[], PathNode shortestPath[])
 {
-	SeperateTargetAndVillainTurtles(stage1Nodes);
-
-	FindMinimalPath();
+	SeperateTargetAndVillainTurtles(turtlePositionNodes);
 }
 
-void Stage2::InitializeHeuristicField(HeuristicNode heuristicField[][110])
+void Stage2::InitializeHeuristicField(HeuristicNode heuristicField[][12])
 {
 	for (int x = 0; x < 110; x++)
 	{
@@ -43,12 +42,12 @@ void Stage2::InitializeHeuristicField(HeuristicNode heuristicField[][110])
 }
 
 // The meat
-std::queue<PathNode> Stage2::FindMinimalPath()
+int Stage2::FindMinimalPath(PathNode shortestPath[])
 {
 	int			currentX;
 	int			currentY;
-	Stage1Node	currentTargetTurtle;
-	HeuristicNode heuristicField[110][110];
+	TurtlePositionNode	currentTargetTurtle;
+	HeuristicNode heuristicField[12][12];
 
 	std::queue<PathNode> path;
 
@@ -59,7 +58,7 @@ std::queue<PathNode> Stage2::FindMinimalPath()
 	InitializeHeuristicField(heuristicField);
 
 	// A vector of target turtles that have not been visited yet
-	std::vector<Stage1Node> remainingTargets(targetTurtles.size());
+	std::vector<TurtlePositionNode> remainingTargets(targetTurtles.size());
 	std::copy(targetTurtles.begin(), targetTurtles.end(), remainingTargets.begin());
 
 	// Start is always at (0, 0)
@@ -91,23 +90,21 @@ std::queue<PathNode> Stage2::FindMinimalPath()
 	return path;
 }
 
-void Stage2::SeperateTargetAndVillainTurtles(std::vector<Stage1Node> stage1Nodes)
+void Stage2::SeperateTargetAndVillainTurtles(TurtlePositionNode turtlePositionNodes[])
 {
-	for (std::vector<Stage1Node>::const_iterator stage1Iter = stage1Nodes.begin();
-		 stage1Iter != stage1Nodes.end();
-		 stage1Iter++)
+	for (int x = 0; x < 7; x++)
 	{
-		switch (stage1Iter->role)
+		switch (turtlePositionNodes[x].role)
 		{
 		case 0:
 			// Not technically needed to know start node since its always (0,0)
 			// So do nothing
 			break;
 		case 1:
-			targetTurtles.push_back(*stage1Iter);
+			targetTurtles.push_back(turtlePositionNodes[x]);
 			break;
 		case 2:
-			villainTurtles.push_back(*stage1Iter);
+			villainTurtles.push_back(turtlePositionNodes[x]);
 			break;
 		default:
 			// Error case
@@ -116,14 +113,14 @@ void Stage2::SeperateTargetAndVillainTurtles(std::vector<Stage1Node> stage1Nodes
 }
 
 // Should never be called if the number of remaining target turtles is 0.
-Stage1Node Stage2::ChooseTargetTurtle(const int CURRENT_X, const int CURRENT_Y, std::vector<Stage1Node> remainingTargets)
+TurtlePositionNode Stage2::ChooseTargetTurtle(const int CURRENT_X, const int CURRENT_Y, std::vector<TurtlePositionNode> remainingTargets)
 {
 	double shortestLength = std::numeric_limits<double>::max();
 	double straightLineDist;
-	Stage1Node bestTarget;
+	TurtlePositionNode bestTarget;
 	
 
-	for (std::vector<Stage1Node>::const_iterator targetsIter = remainingTargets.begin();
+	for (std::vector<TurtlePositionNode>::const_iterator targetsIter = remainingTargets.begin();
 		 targetsIter != remainingTargets.end();
 		 targetsIter++)
 	{

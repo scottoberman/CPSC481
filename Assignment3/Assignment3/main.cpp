@@ -8,7 +8,7 @@
 //			  the Stage1 and Stage3 files is basically
 //			  just a template. However, do not change
 //			  the structs that are used for transferring
-//			  data between stages (ie Stage1Node and PathNode
+//			  data between stages (ie TurtlePositionNode and PathNode
 //			  and their respective vectors and queues).
 //
 //			  Since each portion is being worked on at the
@@ -18,29 +18,31 @@
 //			  code.
 //
 //			  ROS code has not been included in this so far.
-//			  Stage1 and Stage2 will have to make use of
+//			  Stage1 and Stage3 will have to make use of
 //			  ROS.
 
 
 int main()
 {
-	std::vector<Stage1Node> stage1Nodes;
-	std::queue<PathNode> shortestPath;
+	TurtlePositionNode turtlePositionNodes[7]; // 3 target turtles + 4 villain turtles = 7
+
+	PathNode shortestPath[144];	// Upper limit of path is 144 spaces
+	int shortestPathLength;
 
 
 	// Generate field of turtles and put all of the turtles/
-	// x, y coordinates and role in each node (see stage1.h)
-	Stage1(stage1Nodes);
+	// x, y coordinates and role into turtlePositionNodes (see stage1.h)
+	Stage1(turtlePositionNodes);
 
 	// Find shortest path.
 	// Stage2 is a class. ATM Stage1 and Stage3 are simply functions
 	// but change those as you see fit.
-	Stage2 stage2(stage1Nodes);
-	shortestPath = stage2.FindMinimalPath();
+	Stage2 stage2(turtlePositionNodes, shortestPath);
+	shortestPathLength = stage2.FindMinimalPath(shortestPath);
 
 	// Traverse "shortest path"
 	// (See stage2.h for the PathNode struct)
-	Stage3(shortestPath);
+	Stage3(shortestPath, shortestPathLength);
 
 	return 0;
 }

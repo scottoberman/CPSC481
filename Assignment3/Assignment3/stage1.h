@@ -2,18 +2,19 @@
 
 #define STAGE1_H_
 
-#include <vector>
-#include <queue>
+//#include <vector>
+//#include <queue>
 
 // Refrain from altering this struct as other stages depend on this.
-struct TurtlePositionNode
+struct turtlePositionNode
 {
-	int x;	  // X coordinate
-	int y;	  // Y Coordinate
-	int role; // 1 = target, 2 = villain
+	double x;	 	// X coordinate
+	double y;	 	// Y Coordinate
+	bool friendly; 	//if target turtle = true else if villian turtle = false
 };
 
-void Stage1(TurtlePositionNode turtlePositionNodes[]);
 
+void SpawnTurtles(turtlePositionNode* turtle, ros::NodeHandle& nh);
+void KillTurtles(ros::NodeHandle& nh);
 
 #endif

@@ -4,17 +4,23 @@
 
 //#include <vector>
 //#include <queue>
+#include <ros/ros.h>
 
 // Refrain from altering this struct as other stages depend on this.
 struct turtlePositionNode
 {
-	double x;	 	// X coordinate
-	double y;	 	// Y Coordinate
+	float x;	 	// X coordinate
+	float y;	 	// Y Coordinate
 	bool friendly; 	//if target turtle = true else if villian turtle = false
 };
 
-
-void SpawnTurtles(turtlePositionNode* turtle, ros::NodeHandle& nh);
-void KillTurtles(ros::NodeHandle& nh);
+void 	InitPosition(ros::NodeHandle& nh);
+void 	SpawnTurtles(turtlePositionNode* turtle, ros::NodeHandle& nh);
+double 	GetRandomCoordinate();
+void	KillTurtle(std::string name, ros::NodeHandle& nh);
+void 	KillAllTurtles(ros::NodeHandle& nh);
 
 #endif
+
+
+

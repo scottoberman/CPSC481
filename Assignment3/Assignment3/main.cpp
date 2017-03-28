@@ -28,8 +28,8 @@
 int main(int argc, char** argv)
 {
 	// Holds the series of node which will make up the shortest path
-	// Upper limit is 14,400 indices (just to be careful)
-	PathNode shortestPath[14400];
+	// Upper limit is 144 indices (just to be careful)
+	PathNode shortestPath[144];
 
 	// Length of path (in nodes)
 	int shortestPathLength;			

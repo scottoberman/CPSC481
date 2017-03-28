@@ -43,11 +43,11 @@ Stage2::Stage2(turtlePositionNode turtlePositionNodes[], PathNode shortestPath[]
 	SeperateTargetAndVillainTurtles(turtlePositionNodes);
 }
 
-void Stage2::InitializeHeuristicField(HeuristicNode heuristicField[][120])
+void Stage2::InitializeHeuristicField(HeuristicNode heuristicField[][12])
 {
-	for (int x = 0; x < 120; x++)
+	for (int x = 0; x < 12; x++)
 	{
-		for (int y = 0; y < 120; y++)
+		for (int y = 0; y < 12; y++)
 		{
 			heuristicField[y][x].f		= std::numeric_limits<double>::max();
 			heuristicField[y][x].g		= std::numeric_limits<double>::max();
@@ -71,7 +71,7 @@ int Stage2::FindMinimalPath(PathNode shortestPath[])
 	turtlePositionNode	currentTargetTurtle;
 	std::vector<turtlePositionNode>::iterator currentTargetIter;
 
-	HeuristicNode heuristicField[120][120];
+	HeuristicNode heuristicField[12][12];
 
 	std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>> openQueue;
 	std::vector<HeuristicNode> closedQueue;
@@ -102,11 +102,16 @@ int Stage2::FindMinimalPath(PathNode shortestPath[])
 		// TODO TODO
 		do
 		{
-			ExecuteSingleSearch(openQueue.top().x, openQueue.top().y, openQueue.top(), *currentTargetIter, heuristicField);
+			ExecuteSingleSearch(openQueue.top().x, openQueue.top().y, openQueue.top(), *currentTargetIter, heuristicField, openQueue);
 			if (DistanceToTurtle(openQueue.top().x, openQueue.top().y, *currentTargetIter))
 			{
 				targetFound = true;
 			}
+
+			// Close the expanded node
+			closedQueue.push_back(openQueue.top());
+			openQueue.pop();
+
 		} while(!targetFound && !openQueue.empty());
 
 		// After success or failure in navigation, reset the
@@ -114,9 +119,13 @@ int Stage2::FindMinimalPath(PathNode shortestPath[])
 		// and remove target turtle from remaining targets
 		if (!remainingTargets.empty())
 		{
+			// Remove just captured turtle from remaining targets
 			remainingTargets.erase(currentTargetIter);
 			targetFound = false;
 			UpdateShortestPath(openQueue.top());
+
+			// Reset our heuristical values
+			InitializeHeuristicField(heuristicField);
 		}
 	}
 
@@ -161,7 +170,8 @@ bool Stage2::ExecuteSingleSearch(	const int CURRENT_X,
 									const int CURRENT_Y,
 									HeuristicNode currentNode,
 									turtlePositionNode currentTarget,
-									HeuristicNode heuristicField[][120])
+									HeuristicNode heuristicField[][12],
+									std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>> openQueue)
 {
 	// Look around the current node for a new node to visit
 	for (int x = -1; x < 2; x++)
@@ -170,28 +180,43 @@ bool Stage2::ExecuteSingleSearch(	const int CURRENT_X,
 		{
 			if (y != 0 && x != 0)
 			{
-				if (heuristicField[CURRENT_Y + y][CURRENT_X + x].open && MoveSafe(CURRENT_X + x, CURRENT_Y + y))
+				if (MoveInBounds(CURRENT_X + x, CURRENT_Y + y))
 				{
-					if (MoveInBounds(CURRENT_X + x, CURRENT_Y + y))
+					if (heuristicField[CURRENT_Y + y][CURRENT_X + x].open && MoveSafe(CURRENT_X + x, CURRENT_Y + y))
 					{
-						if (currentNode.g + .1 < heuristicField[y][x].g) // Only adding .1 since the heuristic field is 10 times the resolution of the turtle table (120 by 120 vs 12 by 12)
+						// If diagonal move
+						if (std::abs(x) == std::abs(y))
 						{
-							heuristicField[CURRENT_Y + y][CURRENT_X + x].g = currentNode.g + .1;
-							heuristicField[CURRENT_Y + y][CURRENT_X + x].h = DistanceToTurtle(CURRENT_X, CURRENT_Y, currentTarget);
-							heuristicField[CURRENT_Y + y][CURRENT_X + x].f = heuristicField[CURRENT_Y + y][CURRENT_X + x].g + heuristicField[CURRENT_Y + y][CURRENT_X + x].h;
-							heuristicField[CURRENT_Y + y][CURRENT_X + x].parent = &heuristicField[CURRENT_Y][CURRENT_X];
+							if (currentNode.g + 1.41421356237 < heuristicField[y][x].g)
+							{
+								heuristicField[CURRENT_Y + y][CURRENT_X + x].g = currentNode.g + 1;
+								heuristicField[CURRENT_Y + y][CURRENT_X + x].h = DistanceToTurtle(CURRENT_X, CURRENT_Y, currentTarget);
+								heuristicField[CURRENT_Y + y][CURRENT_X + x].f = heuristicField[CURRENT_Y + y][CURRENT_X + x].g + heuristicField[CURRENT_Y + y][CURRENT_X + x].h;
+								heuristicField[CURRENT_Y + y][CURRENT_X + x].parent = &heuristicField[CURRENT_Y][CURRENT_X];
+								PushToOpenQueue(openQueue, heuristicField[CURRENT_Y + y][CURRENT_X + x]);
+							}
+						}
+						// If non-diagonal move
+						else
+						{
+							if (currentNode.g + 1 < heuristicField[y][x].g)
+							{
+								heuristicField[CURRENT_Y + y][CURRENT_X + x].g = currentNode.g + 1;
+								heuristicField[CURRENT_Y + y][CURRENT_X + x].h = DistanceToTurtle(CURRENT_X, CURRENT_Y, currentTarget);
+								heuristicField[CURRENT_Y + y][CURRENT_X + x].f = heuristicField[CURRENT_Y + y][CURRENT_X + x].g + heuristicField[CURRENT_Y + y][CURRENT_X + x].h;
+								heuristicField[CURRENT_Y + y][CURRENT_X + x].parent = &heuristicField[CURRENT_Y][CURRENT_X];
+								PushToOpenQueue(openQueue, heuristicField[CURRENT_Y + y][CURRENT_X + x]);
+							}
 						}
 					}
+					else
+					{
+						heuristicField[CURRENT_Y + y][CURRENT_X + x].open = false;
+					}
 				}
-				else
-				{
-					heuristicField[CURRENT_Y + y][CURRENT_X + x].open = false;
-				}
-				
 			}
 		}
 	}
-
 }
 
 double Stage2::DistanceToTurtle(const int X,
@@ -255,7 +280,7 @@ turtlePositionNode Stage2::ChooseTargetTurtle(	const int CURRENT_X,
 void Stage2::UpdateShortestPath(HeuristicNode currentNode)
 {
 	HeuristicNode* heuristicNodePtr = &currentNode;
-	HeuristicNode reversedPathSegment[14400];
+	HeuristicNode reversedPathSegment[144];
 	int reversedPathSegmentSize;
 	int shortestPathSizeTemp = shortestPathSize;
 	int x = 0;
@@ -271,6 +296,39 @@ void Stage2::UpdateShortestPath(HeuristicNode currentNode)
 	{
 		shortestPath[shortestPathSizeTemp + y].x = reversedPathSegment[shortestPathSizeTemp + (x - y)].x;
 		shortestPath[shortestPathSizeTemp + y].y = reversedPathSegment[shortestPathSizeTemp + (x - y)].y;
-		shortestPath[shortestPathSizeTemp + y].parent = shortestPath[shortestPathSizeTemp + y - 1].parent; // May not need parent in pathnode
+		//shortestPath[shortestPathSizeTemp + y].parent = shortestPath[shortestPathSizeTemp + y - 1].parent; // May not need parent in pathnode
 	}
+}
+
+
+bool Stage2::PushToOpenQueue(std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>> openQueue,
+							 HeuristicNode node)
+{
+	std::vector<HeuristicNode> temp;
+	int x = 0;
+	bool nodeFound = false;
+	while(!openQueue.empty() && !nodeFound)
+	{
+		if (temp.back().x == node.x && temp.back().y == node.y)
+		{
+			temp.back().f = node.f;
+			temp.back().g = node.g;
+			temp.back().h = node.h;
+			temp.back().open = node.open;
+			nodeFound = true;
+		}
+		else
+		{
+			temp.push_back(openQueue.top());
+			openQueue.pop();
+		}
+	}
+
+	while (!temp.empty())
+	{
+		openQueue.push(temp.back());
+		temp.pop_back();
+	}
+
+	return nodeFound;	// Returns if the node existed previously in the openqueue (not really used atm but whatever)
 }

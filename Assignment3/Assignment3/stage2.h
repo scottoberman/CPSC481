@@ -18,7 +18,14 @@ struct PathNode
 {
 	float x;
 	float y;
-	PathNode* parent;
+
+	std::string turtleCapturedHere; // Name of a target turtle which
+									// is being captured at this node.
+									// If the string is empty, then no
+									// turtle is being captured at this
+									// node.
+	//PathNode* parent;
+
 };
 
 class Stage2
@@ -29,10 +36,11 @@ public:
 	int  FindMinimalPath(PathNode []);
 
 private:
-	PathNode shortestPath[14400];
+	PathNode shortestPath[144];
 	int shortestPathSize;
+	double shortestPathDistance;
 
-	void InitializeHeuristicField(HeuristicNode heuristicField[][120]);
+	void InitializeHeuristicField(HeuristicNode heuristicField[][12]);
 	std::vector<turtlePositionNode> villainTurtles;
 	std::vector<turtlePositionNode> targetTurtles;
 	turtlePositionNode ChooseTargetTurtle(	const int,
@@ -48,11 +56,14 @@ private:
 								const int,
 								HeuristicNode,
 								turtlePositionNode,
-								HeuristicNode [][120]);
+								HeuristicNode [][12],
+								std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>>);
 	double DistanceToTurtle(const int,
 							const int,
 							turtlePositionNode);
 	void UpdateShortestPath(HeuristicNode);
+	bool PushToOpenQueue(	std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>>,
+									HeuristicNode);
 };
 
 

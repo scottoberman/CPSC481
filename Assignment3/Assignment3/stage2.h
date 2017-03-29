@@ -5,9 +5,14 @@
 #include "stage1.h"
 
 #include <functional>
+#include <iostream>
+#include <iomanip>
 #include <math.h>
 #include <queue>
 #include <vector>
+
+using std::cout;
+using std::endl;
 
 // Used solely by Stage2
 struct HeuristicNode;
@@ -31,8 +36,7 @@ struct PathNode
 class Stage2
 {
 public:
-	Stage2(	turtlePositionNode [],
-			PathNode []);
+	Stage2(	turtlePositionNode []);
 	int  FindMinimalPath(PathNode []);
 
 private:
@@ -45,25 +49,27 @@ private:
 	std::vector<turtlePositionNode> targetTurtles;
 	turtlePositionNode ChooseTargetTurtle(	const int,
 											const int,
-											std::vector<turtlePositionNode>,
+											std::vector<turtlePositionNode>&,
 											std::vector<turtlePositionNode>::iterator&);
 	void SeperateTargetAndVillainTurtles(turtlePositionNode []);
 	bool MoveInBounds(	const int,
 						const int);
-	bool MoveSafe(	const int,
-					const int);
+	bool MoveSafe(HeuristicNode);
 	bool ExecuteSingleSearch(	const int,
 								const int,
 								HeuristicNode,
 								turtlePositionNode,
 								HeuristicNode [][12],
-								std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>>);
+								std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>>&);
 	double DistanceToTurtle(const int,
 							const int,
 							turtlePositionNode);
-	void UpdateShortestPath(HeuristicNode);
-	bool PushToOpenQueue(	std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>>,
+	void UpdateShortestPath(HeuristicNode,
+				HeuristicNode*);
+	bool PushToOpenQueue(	std::priority_queue<HeuristicNode, std::vector<HeuristicNode>, std::greater<HeuristicNode>>&,
 									HeuristicNode);
+	bool TargetCloseEnoughForCapture(HeuristicNode, turtlePositionNode);
+	bool VillainCloseEnoughForCapture(HeuristicNode, turtlePositionNode);
 };
 
 
